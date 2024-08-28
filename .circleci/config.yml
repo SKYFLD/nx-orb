@@ -23,7 +23,7 @@ workflows:
           filters: *filters
       - orb-tools/publish:
           orb_name: skyfld/nx
-          vcs_type: << pipeline.project.type >>
+          vcs_type: github
           requires:
             - orb-tools/lint
             - orb-tools/review
@@ -36,6 +36,6 @@ workflows:
       - orb-tools/continue:
           orb_name: skyfld/nx
           pipeline_number: << pipeline.number >>
-          vcs_type: << pipeline.project.type >>
+          vcs_type: github
           requires: [orb-tools/publish]
           filters: *filters
