@@ -77,7 +77,7 @@ async function findSuccessfulCommit(branch, workflowName) {
         const pipeline = await findSuccessfulPipeline(items, workflowName);
         return {
           next_page_token,
-          sha: pipeline ? pipeline.vcs.revision : void 0
+          sha: pipeline ? pipeline.trigger_parameters.github_app.commit_sha : void 0
         };
       });
 
@@ -91,7 +91,7 @@ async function findSuccessfulCommit(branch, workflowName) {
 async function findSuccessfulPipeline(pipelines, workflowName) {
   for (const pipeline of pipelines) {
     if (!pipeline.errors.length
-      && commitExists(pipeline.vcs.revision)
+      && commitExists(pipeline.trigger_parameters.github_app.commit_sha)
       && await isWorkflowSuccessful(pipeline.id, workflowName)) {
       return pipeline;
     }
