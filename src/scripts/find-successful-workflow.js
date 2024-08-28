@@ -101,7 +101,7 @@ async function findSuccessfulPipeline(pipelines, workflowName) {
 
 function commitExists(commitSha) {
   try {
-    execSync(`git cat-file -e ${commitSha}`, { stdio: ['pipe', 'pipe', null] });
+    execSync(`git merge-base --is-ancestor ${commitSha} ${mainBranchName}`, { stdio: ['pipe', 'pipe', null] });
     return true;
   } catch {
     return false;
