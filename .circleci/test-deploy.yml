@@ -41,7 +41,7 @@ workflows:
               only: /.*/
       - orb-tools/publish:
           orb_name: skyfld/nx
-          vcs_type: << pipeline.project.type >>
+          vcs_type: github
           pub_type: production
           requires:
             - set-shas-integration-test
