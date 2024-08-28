@@ -2,16 +2,18 @@
 const { execSync } = require('child_process');
 const https = require('https');
 
-const buildUrl = process.argv[2];
-const branchName = process.argv[3];
-const mainBranchName = process.env.MAIN_BRANCH_NAME || process.argv[4];
-const errorOnNoSuccessfulWorkflow = process.argv[5] === '1';
-const allowOnHoldWorkflow = process.argv[6] === '1';
-const skipBranchFilter = process.argv[7] === '1';
-const workflowName = process.argv[8];
+const organizationId = process.argv[2];
+const projectId = process.argv[3];
+const branchName = process.argv[4];
+const mainBranchName = process.env.MAIN_BRANCH_NAME || process.argv[5];
+const errorOnNoSuccessfulWorkflow = process.argv[6] === '1';
+const allowOnHoldWorkflow = process.argv[7] === '1';
+const skipBranchFilter = process.argv[8] === '1';
+const workflowName = process.argv[9];
 const circleToken = process.env.CIRCLE_API_TOKEN;
 
-const [, host, project] = buildUrl.match(/https?:\/\/([^\/]+)\/(.*)\/\d+/);
+const host = "circleci.com";
+const project = `circleci/${organizationId}/${projectId}`;
 
 let BASE_SHA;
 (async () => {
