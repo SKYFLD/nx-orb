@@ -10,6 +10,7 @@ const errorOnNoSuccessfulWorkflow = process.argv[6] === '1';
 const allowOnHoldWorkflow = process.argv[7] === '1';
 const skipBranchFilter = process.argv[8] === '1';
 const workflowName = process.argv[9];
+const mainTagRegex = process.argv[10]
 const circleToken = process.env.CIRCLE_API_TOKEN;
 
 const host = "circleci.com";
@@ -21,7 +22,7 @@ let BASE_SHA;
     BASE_SHA = execSync(`git merge-base origin/${mainBranchName} HEAD`, { encoding: 'utf-8' });
   } else {
     try {
-      BASE_SHA = await findSuccessfulCommit(skipBranchFilter ? undefined : mainBranchName, workflowName);
+      BASE_SHA = await findSuccessfulCommit(skipBranchFilter ? undefined : mainBranchName, workflowName, mainTagRegex);
     } catch (e) {
       process.stderr.write(e.message);
       if (errorOnNoSuccessfulWorkflow) {
@@ -64,9 +65,10 @@ Found the last successful workflow run on 'origin/${mainBranchName}'.\n\n`);
   process.stdout.write(`Commit: ${BASE_SHA}\n\n`);
 })();
 
-async function findSuccessfulCommit(branch, workflowName) {
+async function findSuccessfulCommit(branch, workflowName, tagRegex) {
   const url = `https://${host}/api/v2/project/${project}/pipeline?`;
-  const params = branch ? [`branch=${branch}`] : [];
+  const params = branch && tagRegex.length == 0 ? [`branch=${branch}`] : [];
+
   let nextPage;
   let foundSHA;
 
@@ -74,7 +76,7 @@ async function findSuccessfulCommit(branch, workflowName) {
     const fullParams = params.concat(nextPage ? [`page-token=${nextPage}`] : []).join('&');
     const { next_page_token, sha } = await getJson(`${url}${fullParams}`)
       .then(async ({ next_page_token, items }) => {
-        const pipeline = await findSuccessfulPipeline(items, workflowName);
+        const pipeline = await findSuccessfulPipeline(items, workflowName, tagRegex);
         return {
           next_page_token,
           sha: pipeline ? pipeline.trigger_parameters.github_app.commit_sha : void 0
@@ -88,13 +90,25 @@ async function findSuccessfulCommit(branch, workflowName) {
   return foundSHA;
 }
 
-async function findSuccessfulPipeline(pipelines, workflowName) {
+async function findSuccessfulPipeline(pipelines, workflowName, tagRegex) {
   for (const pipeline of pipelines) {
-    if (!pipeline.errors.length
+    
+    const pipelineSuccessfulCheck = !pipeline.errors.length
       && commitExists(pipeline.trigger_parameters.github_app.commit_sha)
-      && await isWorkflowSuccessful(pipeline.id, workflowName)) {
-      return pipeline;
-    }
+      && await isWorkflowSuccessful(pipeline.id, workflowName);
+
+    if (!pipelineSuccessfulCheck)
+      continue;
+
+    if (tagRegex.length > 0 && !pipeline.trigger_parameters.github_app.tag) 
+      continue;
+
+    if (pipeline.trigger_parameters.github_app.tag){
+      const re = new RegExp(tagRegex);
+      if (re.test(pipeline.trigger_parameters.github_app.tag)) 
+        return pipeline
+
+    } else return pipeline;
   }
   return undefined;
 }
