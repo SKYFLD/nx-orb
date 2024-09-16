@@ -7,6 +7,11 @@ parameters:
     default: "main"
     description: |
       The name of the main branch in your repo, used as the target of PRs. E.g. main, master etc.
+  tag-regex:
+    type: string
+    default: ""
+    description: |
+      The name of the Tag in your repo, if used it will have priority over the Main Branch name. E.g. ^v[0-9]+\.[0-9]+\.[0-9]+-beta$ etc.
   error-on-no-successful-workflow:
     type: boolean
     default: false
@@ -36,6 +41,7 @@ steps:
   - run:
       environment:
         PARAM_MAIN_BRANCH: <<parameters.main-branch-name>>
+        PARAM_TAG_REGEX: <<parameters.tag-regex>>
         PARAM_ERROR_ON_NO_SUCCESSFUL_WORKFLOW: <<parameters.error-on-no-successful-workflow>>
         PARAM_WORKFLOW_NAME: <<parameters.workflow-name>>
         PARAM_ALLOW_ON_HOLD: <<parameters.allow-on-hold-workflow>>
