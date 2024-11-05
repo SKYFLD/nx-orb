@@ -10,7 +10,7 @@ const errorOnNoSuccessfulWorkflow = process.argv[6] === '1';
 const allowOnHoldWorkflow = process.argv[7] === '1';
 const skipBranchFilter = process.argv[8] === '1';
 const workflowName = process.argv[9];
-const mainTagRegex = process.argv[10]
+const mainTagRegex = process.argv[10] || ""
 const circleToken = process.env.CIRCLE_API_TOKEN;
 
 const host = "circleci.com";
@@ -67,8 +67,9 @@ Found the last successful workflow run on 'origin/${mainBranchName}'.\n\n`);
 
 async function findSuccessfulCommit(branch, workflowName, tagRegex) {
   const url = `https://${host}/api/v2/project/${project}/pipeline?`;
-  const params = branch && tagRegex.length == 0 ? [`branch=${branch}`] : [];
+  const params = branch && (tagRegex.length === 0) ? [`branch=${branch}`] : [];
 
+  process.stdout.write(`Checking this URL ${url}${fullParams}.`);
   let nextPage;
   let foundSHA;
 
