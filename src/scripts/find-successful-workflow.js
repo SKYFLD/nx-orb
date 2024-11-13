@@ -69,12 +69,13 @@ async function findSuccessfulCommit(branch, workflowName, tagRegex) {
   const url = `https://${host}/api/v2/project/${project}/pipeline?`;
   const params = branch && (tagRegex.length === 0) ? [`branch=${branch}`] : [];
 
-  process.stdout.write(`Checking this URL ${url}${fullParams}.`);
   let nextPage;
   let foundSHA;
 
   do {
     const fullParams = params.concat(nextPage ? [`page-token=${nextPage}`] : []).join('&');
+    process.stdout.write(`Checking this URL ${url}${fullParams}.`);
+    
     const { next_page_token, sha } = await getJson(`${url}${fullParams}`)
       .then(async ({ next_page_token, items }) => {
         const pipeline = await findSuccessfulPipeline(items, workflowName, tagRegex);
