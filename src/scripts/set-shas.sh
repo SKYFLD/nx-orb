@@ -1,4 +1,3 @@
-#!/bin/bash
 echo "$PARAM_SCRIPT" >>"index.js"
 if [ -z "$CIRCLE_BRANCH" ]; then
   echo "\$CIRCLE_BRANCH not set, falling back to $PARAM_MAIN_BRANCH"
